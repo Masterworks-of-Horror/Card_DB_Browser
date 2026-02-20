@@ -26,7 +26,7 @@ const CACHE_MS = 5 * 60 * 1000;
 export async function fetchMatchData(force = false) {
   if (!force) {
     const cached = getCache();
-    if (cached) return cached;
+    if (cached) return cached.map(reviveDates);
   }
 
   let rows;
@@ -102,6 +102,13 @@ function parseTimestamp(raw) {
   if (!raw) return null;
   const d = new Date(raw);
   return isNaN(d.getTime()) ? null : d;
+}
+
+function reviveDates(m) {
+  if (m.timestamp && typeof m.timestamp === 'string') {
+    m.timestamp = parseTimestamp(m.timestamp);
+  }
+  return m;
 }
 
 function safeJSON(str, fallback) {
