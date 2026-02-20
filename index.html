@@ -6,249 +6,69 @@
   <title>Masters of Horror — Card Database</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700;900&family=Crimson+Text:ital,wght@0,400;0,600;0,700;1,400&family=Fira+Code:wght@400;500&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700&family=Crimson+Text:wght@400;600;700&family=Fira+Code:wght@400&display=swap" rel="stylesheet">
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js"></script>
   <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
-  <!-- Loading Overlay -->
-  <div id="loading-overlay" class="loading-overlay">
-    <div class="loading-content">
-      <div class="eldritch-spinner"></div>
-      <p class="loading-text">Consulting the Elder Tomes...</p>
-    </div>
-  </div>
 
-  <!-- Top Navigation -->
-  <header class="site-header">
-    <div class="header-inner">
-      <a href="#dashboard" class="logo">
-        <span class="logo-icon">&#9764;</span>
-        <span class="logo-text">Masters of Horror</span>
-        <span class="logo-sub">Card Database</span>
-      </a>
-      <nav class="main-nav">
-        <a href="#dashboard" class="nav-link active" data-page="dashboard">Dashboard</a>
-        <a href="#cards" class="nav-link" data-page="cards">Card Browser</a>
-        <a href="#decks" class="nav-link" data-page="decks">Decks &amp; Authors</a>
-        <a href="#keywords" class="nav-link" data-page="keywords">Keywords</a>
-        <a href="#compare" class="nav-link" data-page="compare">Compare</a>
-      </nav>
-      <div class="header-actions">
-        <button id="refresh-btn" class="btn btn-ghost" title="Refresh data from spreadsheet">
-          <span class="refresh-icon">&#8635;</span> Sync
-        </button>
-        <span id="last-updated" class="last-updated"></span>
-      </div>
-    </div>
+  <header class="header">
+    <span class="logo">&#9764; Masters of Horror</span>
+    <button id="refresh-btn" class="btn-refresh" title="Refresh data">&#8635; Sync</button>
   </header>
 
-  <!-- Main Content -->
-  <main class="main-content">
+  <main>
+    <div class="stats-bar" id="stats-bar"></div>
 
-    <!-- ═══════════════ DASHBOARD ═══════════════ -->
-    <section id="page-dashboard" class="page active">
-      <div class="page-header">
-        <h1>Grimoire Overview</h1>
-        <p class="page-subtitle">A dark census of the cards within</p>
+    <div class="charts">
+      <div class="chart-box">
+        <h3>Cost Curve</h3>
+        <canvas id="chart-cost"></canvas>
       </div>
-
-      <div class="stats-row">
-        <div class="stat-card">
-          <div class="stat-value" id="stat-total">—</div>
-          <div class="stat-label">Total Cards</div>
-        </div>
-        <div class="stat-card">
-          <div class="stat-value" id="stat-characters">—</div>
-          <div class="stat-label">Characters</div>
-        </div>
-        <div class="stat-card">
-          <div class="stat-value" id="stat-settings">—</div>
-          <div class="stat-label">Settings</div>
-        </div>
-        <div class="stat-card">
-          <div class="stat-value" id="stat-narratives">—</div>
-          <div class="stat-label">Narratives</div>
-        </div>
-        <div class="stat-card">
-          <div class="stat-value" id="stat-items">—</div>
-          <div class="stat-label">Items</div>
-        </div>
-        <div class="stat-card">
-          <div class="stat-value" id="stat-plots">—</div>
-          <div class="stat-label">Plots</div>
-        </div>
+      <div class="chart-box">
+        <h3>Rarity</h3>
+        <canvas id="chart-rarity"></canvas>
       </div>
-
-      <div class="charts-grid">
-        <div class="chart-card">
-          <h3>Cost Curve</h3>
-          <canvas id="chart-cost-curve"></canvas>
-        </div>
-        <div class="chart-card">
-          <h3>Cards by Rarity</h3>
-          <canvas id="chart-rarity"></canvas>
-        </div>
-        <div class="chart-card">
-          <h3>Cards by Author</h3>
-          <canvas id="chart-author"></canvas>
-        </div>
-        <div class="chart-card">
-          <h3>Might vs Will Distribution</h3>
-          <canvas id="chart-might-will"></canvas>
-        </div>
-        <div class="chart-card">
-          <h3>Card Types Breakdown</h3>
-          <canvas id="chart-types"></canvas>
-        </div>
-        <div class="chart-card">
-          <h3>Average Stats by Cost</h3>
-          <canvas id="chart-avg-stats"></canvas>
-        </div>
+      <div class="chart-box">
+        <h3>By Author</h3>
+        <canvas id="chart-author"></canvas>
       </div>
-    </section>
-
-    <!-- ═══════════════ CARD BROWSER ═══════════════ -->
-    <section id="page-cards" class="page">
-      <div class="page-header">
-        <h1>Card Browser</h1>
-        <p class="page-subtitle">Search the forbidden library</p>
+      <div class="chart-box">
+        <h3>Might vs Will</h3>
+        <canvas id="chart-scatter"></canvas>
       </div>
+    </div>
 
-      <div class="browser-controls">
-        <div class="search-bar">
-          <input type="text" id="search-input" placeholder="Search by name or effect text..." class="search-input">
-          <span class="search-icon">&#128270;</span>
-        </div>
+    <div class="table-controls">
+      <input type="text" id="search" placeholder="Search cards..." class="search-input">
+      <select id="filter-type" class="filter-select">
+        <option value="">All Types</option>
+      </select>
+      <select id="filter-rarity" class="filter-select">
+        <option value="">All Rarities</option>
+      </select>
+      <span id="count" class="count"></span>
+    </div>
 
-        <div class="filter-row">
-          <div class="filter-group">
-            <label>Type</label>
-            <select id="filter-type" class="filter-select">
-              <option value="">All Types</option>
-            </select>
-          </div>
-          <div class="filter-group">
-            <label>Rarity</label>
-            <select id="filter-rarity" class="filter-select">
-              <option value="">All Rarities</option>
-            </select>
-          </div>
-          <div class="filter-group">
-            <label>Author / Deck</label>
-            <select id="filter-author" class="filter-select">
-              <option value="">All Authors</option>
-            </select>
-          </div>
-          <div class="filter-group">
-            <label>Cost</label>
-            <div class="range-inputs">
-              <input type="number" id="filter-cost-min" class="filter-number" placeholder="Min" min="0">
-              <span class="range-sep">—</span>
-              <input type="number" id="filter-cost-max" class="filter-number" placeholder="Max" min="0">
-            </div>
-          </div>
-          <div class="filter-group">
-            <label>Keywords</label>
-            <select id="filter-keyword" class="filter-select">
-              <option value="">All Keywords</option>
-            </select>
-          </div>
-          <div class="filter-group">
-            <label>Sort By</label>
-            <select id="sort-by" class="filter-select">
-              <option value="id">Card ID</option>
-              <option value="name">Name</option>
-              <option value="cost">Cost</option>
-              <option value="might">Might</option>
-              <option value="will">Will</option>
-              <option value="rarity">Rarity</option>
-              <option value="type">Type</option>
-            </select>
-          </div>
-        </div>
-
-        <div class="browser-toolbar">
-          <div class="result-count" id="result-count">0 cards found</div>
-          <div class="view-toggles">
-            <button class="btn btn-icon active" id="view-grid" title="Grid View">&#9638;</button>
-            <button class="btn btn-icon" id="view-list" title="List View">&#9776;</button>
-          </div>
-          <button class="btn btn-ghost" id="export-csv">Export CSV</button>
-          <button class="btn btn-ghost" id="export-json">Export JSON</button>
-        </div>
-      </div>
-
-      <div id="card-grid" class="card-grid"></div>
-      <div id="card-list" class="card-list hidden"></div>
-    </section>
-
-    <!-- ═══════════════ DECKS & AUTHORS ═══════════════ -->
-    <section id="page-decks" class="page">
-      <div class="page-header">
-        <h1>Decks &amp; Authors</h1>
-        <p class="page-subtitle">The scribes of dread and their dark collections</p>
-      </div>
-      <div id="decks-content" class="decks-content"></div>
-    </section>
-
-    <!-- ═══════════════ KEYWORDS ═══════════════ -->
-    <section id="page-keywords" class="page">
-      <div class="page-header">
-        <h1>Keyword Reference</h1>
-        <p class="page-subtitle">Arcane lexicon of card mechanics</p>
-      </div>
-      <div id="keywords-content" class="keywords-content"></div>
-    </section>
-
-    <!-- ═══════════════ COMPARE ═══════════════ -->
-    <section id="page-compare" class="page">
-      <div class="page-header">
-        <h1>Card Comparison</h1>
-        <p class="page-subtitle">Weigh the horrors side by side</p>
-      </div>
-      <div class="compare-controls">
-        <div class="compare-search-row">
-          <div class="compare-slot" data-slot="0">
-            <input type="text" class="compare-search" placeholder="Search card to compare..." data-slot="0">
-            <div class="compare-suggestions hidden"></div>
-          </div>
-          <div class="compare-slot" data-slot="1">
-            <input type="text" class="compare-search" placeholder="Search card to compare..." data-slot="1">
-            <div class="compare-suggestions hidden"></div>
-          </div>
-          <div class="compare-slot" data-slot="2">
-            <input type="text" class="compare-search" placeholder="Search card to compare..." data-slot="2">
-            <div class="compare-suggestions hidden"></div>
-          </div>
-          <div class="compare-slot" data-slot="3">
-            <input type="text" class="compare-search" placeholder="Search card to compare..." data-slot="3">
-            <div class="compare-suggestions hidden"></div>
-          </div>
-        </div>
-      </div>
-      <div id="compare-results" class="compare-results"></div>
-    </section>
+    <div class="table-wrap">
+      <table id="card-table">
+        <thead>
+          <tr>
+            <th data-sort="cardId">ID</th>
+            <th data-sort="cardName">Name</th>
+            <th data-sort="cardType">Type</th>
+            <th data-sort="rarity">Rarity</th>
+            <th data-sort="inspirationCost">Cost</th>
+            <th data-sort="might">Might</th>
+            <th data-sort="will">Will</th>
+            <th>Effect</th>
+          </tr>
+        </thead>
+        <tbody id="card-tbody"></tbody>
+      </table>
+    </div>
   </main>
 
-  <!-- Card Detail Modal -->
-  <div id="card-modal" class="modal hidden">
-    <div class="modal-backdrop"></div>
-    <div class="modal-content">
-      <button class="modal-close">&times;</button>
-      <div id="modal-body" class="modal-body"></div>
-    </div>
-  </div>
-
-  <!-- Footer -->
-  <footer class="site-footer">
-    <div class="footer-inner">
-      <p>Masters of Horror Card Database — Data sourced live from Google Sheets</p>
-      <p class="footer-sub">Built for designers. Styled by madness.</p>
-    </div>
-  </footer>
-
-  <!-- JS Modules -->
   <script type="module" src="js/app.js"></script>
 </body>
 </html>
