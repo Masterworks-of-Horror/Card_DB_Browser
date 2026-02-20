@@ -15,8 +15,12 @@
  */
 
 const SPREADSHEET_ID = '1AqB6cMJH5i2mjp5RY_mfwzmmxTie48vVyFhnoEh4BoI';
+const CARD_REF_SPREADSHEET_ID = '13F6oPVneZAqK3XJhWgeGbTx6_4EiaGcyhkv4pnfp_UI';
+const CARD_REF_SHEET = 'Card';
 const CACHE_KEY = 'moh_match_data';
 const CACHE_TS_KEY = 'moh_match_data_ts';
+const CARD_CACHE_KEY = 'moh_card_ref';
+const CARD_CACHE_TS_KEY = 'moh_card_ref_ts';
 const CACHE_MS = 5 * 60 * 1000;
 
 export async function fetchMatchData(force = false) {
@@ -143,5 +147,71 @@ function setCache(data) {
   try {
     localStorage.setItem(CACHE_KEY, JSON.stringify(data));
     localStorage.setItem(CACHE_TS_KEY, String(Date.now()));
+  } catch {}
+}
+
+// ── Card Reference Lookup ──
+
+export async function fetchCardRef(force = false) {
+  if (!force) {
+    const cached = getCardCache();
+    if (cached) return cached;
+  }
+
+  const url = `https://docs.google.com/spreadsheets/d/${CARD_REF_SPREADSHEET_ID}/gviz/tq?tqx=out:csv&sheet=${CARD_REF_SHEET}`;
+  const res = await fetch(url);
+  if (!res.ok) throw new Error('Card ref fetch failed');
+  const text = await res.text();
+  const rows = parseCSVText(text);
+  if (rows.length < 2) throw new Error('No card data');
+
+  const header = rows[0].map(h => h.trim().toLowerCase());
+  const dataRows = rows.slice(1);
+
+  const iId = header.indexOf('card id');
+  const iDeck = header.indexOf('deck');
+  const iName = header.indexOf('name');
+  const iType = header.indexOf('type');
+  const iRarity = header.indexOf('rarity');
+  const iCost = header.indexOf('cost');
+  const iMight = header.indexOf('might');
+  const iHealth = header.indexOf('health');
+  const iEffect = header.findIndex(h => h.startsWith('effect'));
+
+  const cardMap = {};
+  for (const row of dataRows) {
+    const id = (row[iId] || '').trim();
+    if (!id) continue;
+    cardMap[id] = {
+      id,
+      deck: (row[iDeck] || '').trim(),
+      name: (row[iName] || '').trim(),
+      type: (row[iType] || '').trim(),
+      rarity: (row[iRarity] || '').trim(),
+      cost: (row[iCost] || '').trim(),
+      might: (row[iMight] || '').trim(),
+      health: (row[iHealth] || '').trim(),
+      effect: (row[iEffect] || '').trim(),
+    };
+  }
+
+  setCardCache(cardMap);
+  return cardMap;
+}
+
+function getCardCache() {
+  try {
+    const ts = localStorage.getItem(CARD_CACHE_TS_KEY);
+    const d = localStorage.getItem(CARD_CACHE_KEY);
+    if (!d || !ts) return null;
+    if (Date.now() - +ts > CACHE_MS) return null;
+    return JSON.parse(d);
+  } catch { return null; }
+}
+
+function setCardCache(data) {
+  try {
+    localStorage.setItem(CARD_CACHE_KEY, JSON.stringify(data));
+    localStorage.setItem(CARD_CACHE_TS_KEY, String(Date.now()));
   } catch {}
 }

@@ -1,6 +1,7 @@
-import { fetchMatchData } from './api.js';
+import { fetchMatchData, fetchCardRef } from './api.js';
 
 let allMatches = [];
+let cardRef = {};
 let chartInstances = {};
 
 document.addEventListener('DOMContentLoaded', async () => {
@@ -17,12 +18,23 @@ document.addEventListener('DOMContentLoaded', async () => {
 
 async function load(force = false) {
   try {
-    allMatches = await fetchMatchData(force);
+    const [matches, cards] = await Promise.all([
+      fetchMatchData(force),
+      fetchCardRef(force).catch(e => { console.warn('Card ref load failed:', e); return {}; }),
+    ]);
+    allMatches = matches;
+    cardRef = cards;
     render();
   } catch (e) {
     document.querySelector('main').innerHTML =
       `<p style="color:var(--blood);text-align:center;margin-top:3rem">Failed to load: ${esc(e.message)}<br><br>Make sure the Google Sheet is shared publicly.</p>`;
   }
+}
+
+function cardName(id) {
+  if (!id) return 'Unknown';
+  const c = cardRef[id];
+  return c?.name || id;
 }
 
 function getFiltered() {
@@ -82,7 +94,7 @@ function renderCharts(matches) {
   // Author popularity
   const authMap = {};
   matches.forEach(m => {
-    const a = m.authorCardId || 'Unknown';
+    const a = cardName(m.authorCardId);
     authMap[a] = (authMap[a] || 0) + 1;
   });
   const authLabels = Object.keys(authMap).sort((a, b) => authMap[b] - authMap[a]);
@@ -101,7 +113,8 @@ function renderCharts(matches) {
     const counts = m.playCounts;
     if (typeof counts === 'object' && !Array.isArray(counts)) {
       for (const [key, val] of Object.entries(counts)) {
-        const name = key.includes(':') ? key.split(':').slice(1).join(':') : key;
+        const id = key.includes(':') ? key.split(':')[0] : key;
+        const name = cardName(id) || (key.includes(':') ? key.split(':').slice(1).join(':') : key);
         cardMap[name] = (cardMap[name] || 0) + (Number(val) || 0);
       }
     }
@@ -179,7 +192,7 @@ function renderMatchTable(matches) {
     return `<tr>
       <td class="cell-id">${esc(formatDate(m.timestamp))}</td>
       <td>${esc(m.playerId)}</td>
-      <td class="cell-name">${esc(m.authorCardId)}</td>
+      <td class="cell-name">${esc(cardName(m.authorCardId))}</td>
       <td class="cell-id">${esc(m.serverId)}</td>
       <td style="text-align:center">${m.deck?.length || 0}</td>
       <td style="text-align:center;color:var(--gold)">${totalPlayed}</td>
@@ -192,14 +205,17 @@ function renderMatchTable(matches) {
 // ── Card Frequency Table ──
 function renderCardFreq(matches) {
   const cardMap = {};
+  const cardIdMap = {};
   const matchesWithCard = {};
   matches.forEach(m => {
     const counts = m.playCounts;
     if (typeof counts === 'object' && !Array.isArray(counts)) {
       const seen = new Set();
       for (const [key, val] of Object.entries(counts)) {
-        const name = key.includes(':') ? key.split(':').slice(1).join(':') : key;
+        const id = key.includes(':') ? key.split(':')[0] : key;
+        const name = cardName(id) || (key.includes(':') ? key.split(':').slice(1).join(':') : key);
         cardMap[name] = (cardMap[name] || 0) + (Number(val) || 0);
+        if (!cardIdMap[name]) cardIdMap[name] = id;
         if (!seen.has(name)) { matchesWithCard[name] = (matchesWithCard[name] || 0) + 1; seen.add(name); }
       }
     }
@@ -210,9 +226,16 @@ function renderCardFreq(matches) {
   const tbody = document.getElementById('card-freq-tbody');
   tbody.innerHTML = sorted.map(([name, count]) => {
     const pct = Math.round((matchesWithCard[name] || 0) / total * 100);
+    const ref = cardRef[cardIdMap[name]];
+    const type = ref?.type || '';
+    const rarity = ref?.rarity || '';
+    const cost = ref?.cost || '';
     return `<tr>
       <td class="cell-name">${esc(name)}</td>
-      <td style="text-align:center;color:var(--gold)">${count}</td>
+      <td>${type ? `<span class="cell-type" data-t="${esc(type)}">${esc(type)}</span>` : ''}</td>
+      <td class="cell-rarity" data-r="${esc(rarity)}">${esc(rarity)}</td>
+      <td style="text-align:center;color:var(--gold)">${cost}</td>
+      <td style="text-align:center;font-weight:600;color:var(--gold)">${count}</td>
       <td style="text-align:center">${pct}%</td>
     </tr>`;
   }).join('');
