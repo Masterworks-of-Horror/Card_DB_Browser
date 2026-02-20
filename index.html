@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Masters of Horror — Card Database</title>
+  <title>Masters of Horror — Match Data</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700&family=Crimson+Text:wght@400;600;700&family=Fira+Code:wght@400&display=swap" rel="stylesheet">
@@ -13,58 +13,76 @@
 <body>
 
   <header class="header">
-    <span class="logo">&#9764; Masters of Horror</span>
-    <button id="refresh-btn" class="btn-refresh" title="Refresh data">&#8635; Sync</button>
+    <span class="logo">&#9764; Masters of Horror — Match Data</span>
+    <button id="refresh-btn" class="btn-refresh">&#8635; Sync</button>
   </header>
 
   <main>
+    <!-- Date Filter -->
+    <div class="date-filter">
+      <label>From</label>
+      <input type="date" id="date-from" class="date-input">
+      <label>To</label>
+      <input type="date" id="date-to" class="date-input">
+      <button id="date-clear" class="btn-refresh">Clear</button>
+      <span id="match-count" class="count"></span>
+    </div>
+
+    <!-- Stats -->
     <div class="stats-bar" id="stats-bar"></div>
 
+    <!-- Charts -->
     <div class="charts">
       <div class="chart-box">
-        <h3>Cost Curve</h3>
-        <canvas id="chart-cost"></canvas>
+        <h3>Author Popularity</h3>
+        <canvas id="chart-authors"></canvas>
       </div>
       <div class="chart-box">
-        <h3>Rarity</h3>
-        <canvas id="chart-rarity"></canvas>
+        <h3>Most Played Cards</h3>
+        <canvas id="chart-cards"></canvas>
       </div>
       <div class="chart-box">
-        <h3>By Author</h3>
-        <canvas id="chart-author"></canvas>
+        <h3>Page Changes by Reason</h3>
+        <canvas id="chart-pages"></canvas>
       </div>
       <div class="chart-box">
-        <h3>Might vs Will</h3>
-        <canvas id="chart-scatter"></canvas>
+        <h3>Card Plays per Act</h3>
+        <canvas id="chart-acts"></canvas>
       </div>
     </div>
 
-    <div class="table-controls">
-      <input type="text" id="search" placeholder="Search cards..." class="search-input">
-      <select id="filter-type" class="filter-select">
-        <option value="">All Types</option>
-      </select>
-      <select id="filter-rarity" class="filter-select">
-        <option value="">All Rarities</option>
-      </select>
-      <span id="count" class="count"></span>
-    </div>
-
+    <!-- Match Table -->
+    <h2 class="section-title">Match Log</h2>
     <div class="table-wrap">
-      <table id="card-table">
+      <table>
         <thead>
           <tr>
-            <th data-sort="cardId">ID</th>
-            <th data-sort="cardName">Name</th>
-            <th data-sort="cardType">Type</th>
-            <th data-sort="rarity">Rarity</th>
-            <th data-sort="inspirationCost">Cost</th>
-            <th data-sort="might">Might</th>
-            <th data-sort="will">Will</th>
-            <th>Effect</th>
+            <th>Date</th>
+            <th>Player</th>
+            <th>Author</th>
+            <th>Server</th>
+            <th>Deck Size</th>
+            <th>Cards Played</th>
+            <th>Net Pages</th>
+            <th>Acts Active</th>
           </tr>
         </thead>
-        <tbody id="card-tbody"></tbody>
+        <tbody id="match-tbody"></tbody>
+      </table>
+    </div>
+
+    <!-- Top Cards Table -->
+    <h2 class="section-title">Card Play Frequency</h2>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>Card</th>
+            <th>Times Played</th>
+            <th>% of Matches</th>
+          </tr>
+        </thead>
+        <tbody id="card-freq-tbody"></tbody>
       </table>
     </div>
   </main>

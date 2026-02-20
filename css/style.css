@@ -121,6 +121,47 @@ main {
 
 .chart-box canvas { max-height: 220px; }
 
+/* Date filter */
+.date-filter {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 1.5rem;
+  flex-wrap: wrap;
+}
+
+.date-filter label {
+  font-family: 'Cinzel', serif;
+  font-size: 0.75rem;
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+.date-input {
+  padding: 0.4rem 0.6rem;
+  font-family: 'Crimson Text', serif;
+  font-size: 0.9rem;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  color: var(--text);
+  outline: none;
+  color-scheme: dark;
+}
+
+.date-input:focus { border-color: var(--gold); }
+
+/* Section title */
+.section-title {
+  font-family: 'Cinzel', serif;
+  font-size: 1rem;
+  color: var(--text2);
+  margin: 1.5rem 0 0.75rem;
+  padding-bottom: 0.5rem;
+  border-bottom: 1px solid var(--border);
+}
+
 /* Table controls */
 .table-controls {
   display: flex;
